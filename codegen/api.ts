@@ -38,9 +38,23 @@ export class BaseAPI {
 }
 
 /**
+ * Catalog category
+ */
+export interface ARCatalogCategory {
+    /**
+     * Category name
+     */
+    "category": string;
+    /**
+     * List of taxonomies included in this category
+     */
+    "taxonomies": Array<ARCatalogTaxonomy>;
+}
+
+/**
  * Catalog movie information
  */
-export interface ARMovie {
+export interface ARCatalogMovie {
     /**
      * Movie identifier for the requester client
      */
@@ -57,6 +71,86 @@ export interface ARMovie {
      * Name or names of the movie director(s)
      */
     "director": string;
+}
+
+/**
+ * Catalog serie information
+ */
+export interface ARCatalogSerie {
+    /**
+     * Serie identifier for the requester client
+     */
+    "client_serie_id": string;
+    /**
+     * Serie title in the request locale
+     */
+    "title": string;
+    /**
+     * Year of production for first season
+     */
+    "year": number;
+    /**
+     * Name or names of the serie creator(s)
+     */
+    "creators": string;
+    /**
+     * Number of available seasons
+     */
+    "season_count": number;
+}
+
+/**
+ * Catalog serie chapter information
+ */
+export interface ARCatalogSerieChapter {
+    /**
+     * Index of the chapter amongst season chapters, starting from 1
+     */
+    "chapter_index": number;
+    /**
+     * Movie ID for this chapter
+     */
+    "client_movie_id": string;
+    /**
+     * Chapter title in the requested locale
+     */
+    "title": string;
+}
+
+/**
+ * Catalog serie seasons information
+ */
+export interface ARCatalogSerieSeason {
+    /**
+     * Index of the season amongst serie seasons, starting from 1
+     */
+    "season_index": number;
+    /**
+     * List of chapters of the season
+     */
+    "chapters": Array<ARCatalogSerieChapter>;
+}
+
+/**
+ * Catalog taxonomy item
+ */
+export interface ARCatalogTaxonomy {
+    /**
+     * Taxonomy ID
+     */
+    "tx_id": string;
+    /**
+     * Taxonomy friendly name
+     */
+    "name": string;
+    /**
+     * Indicates if this taxonomy node can be selected
+     */
+    "is_leaf"?: boolean;
+    /**
+     * List of child nodes for this taxonomy node
+     */
+    "children"?: Array<ARCatalogTaxonomy>;
 }
 
 /**
@@ -206,64 +300,6 @@ export interface ARSearchResultTaxonomy {
 }
 
 /**
- * Catalog serie information
- */
-export interface ARSerie {
-    /**
-     * Serie identifier for the requester client
-     */
-    "client_serie_id": string;
-    /**
-     * Serie title in the request locale
-     */
-    "title": string;
-    /**
-     * Year of production for first season
-     */
-    "year": number;
-    /**
-     * Name or names of the serie creator(s)
-     */
-    "creators": string;
-    /**
-     * Number of available seasons
-     */
-    "season_count": number;
-}
-
-/**
- * Catalog serie chapter information
- */
-export interface ARSerieChapter {
-    /**
-     * Index of the chapter amongst season chapters, starting from 1
-     */
-    "chapter_index": number;
-    /**
-     * Movie ID for this chapter
-     */
-    "client_movie_id": string;
-    /**
-     * Chapter title in the requested locale
-     */
-    "title": string;
-}
-
-/**
- * Catalog serie seasons information
- */
-export interface ARSerieSeason {
-    /**
-     * Index of the season amongst serie seasons, starting from 1
-     */
-    "season_index": number;
-    /**
-     * List of chapters of the season
-     */
-    "chapters": Array<ARSerieChapter>;
-}
-
-/**
  * API access token
  */
 export interface AccessToken {
@@ -404,6 +440,30 @@ export const DefaultApiFetchParamCreator = {
         };
     },
     /**
+     * Returns the list of taxonomies which are ready for AR analysis
+     * @summary List AR-available taxonomies
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     */
+    getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any): FetchArgs {
+        // verify required parameter "authorization" is set
+        if (params["authorization"] == null) {
+            throw new Error("Missing required parameter authorization when calling getARTaxonomies");
+        }
+        const baseUrl = `/ar/taxonomies`;
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = Object.assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        fetchOptions.headers = Object.assign({
+            "Authorization": params["authorization"],"Accept-Language": params["acceptLanguage"],
+        }, contentTypeHeader, fetchOptions.headers);
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
      * Returns the list of contextual items found after filtering by movie ID and context ID
      * @summary Search contextual items
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -518,7 +578,7 @@ export const DefaultApiFp = {
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      */
-    getARMovies(params: { "authorization": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARMovie>> {
+    getARMovies(params: { "authorization": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogMovie>> {
         const fetchArgs = DefaultApiFetchParamCreator.getARMovies(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
@@ -537,7 +597,7 @@ export const DefaultApiFp = {
      * @param clientSerieId Client serie identifier
      * @param acceptLanguage Client locale, as language-country
      */
-    getARSerieSeasons(params: { "authorization": string; "clientSerieId": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSerieSeason>> {
+    getARSerieSeasons(params: { "authorization": string; "clientSerieId": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogSerieSeason>> {
         const fetchArgs = DefaultApiFetchParamCreator.getARSerieSeasons(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
@@ -555,8 +615,26 @@ export const DefaultApiFp = {
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      */
-    getARSeries(params: { "authorization": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSerie>> {
+    getARSeries(params: { "authorization": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogSerie>> {
         const fetchArgs = DefaultApiFetchParamCreator.getARSeries(params, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * Returns the list of taxonomies which are ready for AR analysis
+     * @summary List AR-available taxonomies
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     */
+    getARTaxonomies(params: { "authorization": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogCategory>> {
+        const fetchArgs = DefaultApiFetchParamCreator.getARTaxonomies(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -662,6 +740,15 @@ export class DefaultApi extends BaseAPI {
         return DefaultApiFp.getARSeries(params, options)(this.fetch, this.basePath);
     }
     /**
+     * Returns the list of taxonomies which are ready for AR analysis
+     * @summary List AR-available taxonomies
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     */
+    getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
+        return DefaultApiFp.getARTaxonomies(params, options)(this.fetch, this.basePath);
+    }
+    /**
      * Returns the list of contextual items found after filtering by movie ID and context ID
      * @summary Search contextual items
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -728,6 +815,15 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
          */
         getARSeries(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
             return DefaultApiFp.getARSeries(params, options)(fetch, basePath);
+        },
+        /**
+         * Returns the list of taxonomies which are ready for AR analysis
+         * @summary List AR-available taxonomies
+         * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+         * @param acceptLanguage Client locale, as language-country
+         */
+        getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
+            return DefaultApiFp.getARTaxonomies(params, options)(fetch, basePath);
         },
         /**
          * Returns the list of contextual items found after filtering by movie ID and context ID
@@ -978,9 +1074,9 @@ export class CustomAPI extends DefaultApi {
   */
   public getARMovies(params: {  }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
-    return new Promise<Array<ARMovie>>((resolve: any, reject: any) => {
+    return new Promise<Array<ARCatalogMovie>>((resolve: any, reject: any) => {
       super.getARMovies(newParams)
-      .then((result: Array<ARMovie>) => {
+      .then((result: Array<ARCatalogMovie>) => {
         resolve(result);
       })
       .catch ((error: any) => {
@@ -1021,9 +1117,9 @@ export class CustomAPI extends DefaultApi {
   */
   public getARSerieSeasons(params: {  "clientSerieId": string; }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
-    return new Promise<Array<ARSerieSeason>>((resolve: any, reject: any) => {
+    return new Promise<Array<ARCatalogSerieSeason>>((resolve: any, reject: any) => {
       super.getARSerieSeasons(newParams)
-      .then((result: Array<ARSerieSeason>) => {
+      .then((result: Array<ARCatalogSerieSeason>) => {
         resolve(result);
       })
       .catch ((error: any) => {
@@ -1063,9 +1159,9 @@ export class CustomAPI extends DefaultApi {
   */
   public getARSeries(params: {  }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
-    return new Promise<Array<ARSerie>>((resolve: any, reject: any) => {
+    return new Promise<Array<ARCatalogSerie>>((resolve: any, reject: any) => {
       super.getARSeries(newParams)
-      .then((result: Array<ARSerie>) => {
+      .then((result: Array<ARCatalogSerie>) => {
         resolve(result);
       })
       .catch ((error: any) => {
@@ -1084,6 +1180,48 @@ export class CustomAPI extends DefaultApi {
             .then(() => {
               newParams = this.gatherCommonHeaders(params);
               return super.getARSeries(newParams);
+            })
+            .then((result: any) => {
+              resolve(result);
+            })
+            .catch ((errorRefreshingToken: any) => {
+              reject(errorRefreshingToken);
+            });
+        } else {
+            reject(error);
+        }
+      });
+    });
+  }
+  /**
+  * List AR-available taxonomies
+  * Returns the list of taxonomies which are ready for AR analysis
+  * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+  * @param acceptLanguage Client locale, as language-country
+  */
+  public getARTaxonomies(params: {  }, options?: any) {
+    let newParams: any = this.gatherCommonHeaders(params);
+    return new Promise<Array<ARCatalogCategory>>((resolve: any, reject: any) => {
+      super.getARTaxonomies(newParams)
+      .then((result: Array<ARCatalogCategory>) => {
+        resolve(result);
+      })
+      .catch ((error: any) => {
+        if (error) {
+            console.log("%c REST error - getARTaxonomies", "background: black; color: #FE2EF7; padding: 0 10px;", error);
+        }
+        if (error.status === 401 && this.serviceRequiresToken("getARTaxonomies")) {
+            this.refreshToken()
+            .catch ((error: any) => {
+              if (this.deviceId) {
+                return this.postTokenAndSave({ grantType: "device_credentials", deviceId: this.deviceId });
+              } else {
+                throw new Error("Can not refresh token (no device id)");
+              }
+            })
+            .then(() => {
+              newParams = this.gatherCommonHeaders(params);
+              return super.getARTaxonomies(newParams);
             })
             .then((result: any) => {
               resolve(result);

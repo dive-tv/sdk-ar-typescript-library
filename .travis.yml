@@ -7,7 +7,7 @@ node_js:
   
 install:
   - chmod +x scr/publish.sh
-  
+
 script:
   - scr/publish.sh
 

@@ -1,4 +1,3 @@
-import { Promise } from "es6-promise";
 import { CustomAPI } from "../codegen/api";
 /**
 * ArAPI - Helper class that connects to

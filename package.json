@@ -4,7 +4,7 @@
   "description": "Dive SDK Client for AR (Ad Resonance)",
   "browser": "./dist/ar.js",
   "main": "./dist/ar.js",
-  "types": "./dist/types/ar/index.d.ts",
+  "types": "./dist/types/src/ar.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cross-env NODE_ENV=production webpack --config ./webpack.config.js --progress -p"

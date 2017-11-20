@@ -9,7 +9,6 @@ install:
   - chmod +x scr/publish.sh
   
 script:
-  - npm build
   - scr/publish.sh
 
 notifications:

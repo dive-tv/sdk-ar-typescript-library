@@ -3,7 +3,7 @@
 if [ -z "$TRAVIS_PULL_REQUEST" ] || [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
       
     if [ "$TRAVIS_BRANCH" == "master" ]; then
-        echo "Push on master branch, publishing lib to NPM"
+        echo "Set minor version and push on master branch, publishing lib to NPM"
 	npm version minor
         npm publish
     else

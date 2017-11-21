@@ -8,7 +8,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cross-env NODE_ENV=production webpack --config ./webpack.config.js --progress -p",
-    "version": "npm run build && git add .",
+    "version": "git checkout -b master && npm run build && git add .",
     "postversion": "git push origin master --tags"
   },
   "repository": {

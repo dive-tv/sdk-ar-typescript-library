@@ -4,8 +4,14 @@ sudo: false
 language: node_js
 node_js:
   - "6"
-  
+ 
+before_install:
+  - openssl aes-256-cbc -K $encrypted_e6b9bc48e070_key -iv $encrypted_e6b9bc48e070_iv -in auto_commit_sdk_ar_typescript_library.enc -out auto_commit_sdk_ar_typescript_library -d
+  - chmod 600 auto_commit_sdk_ar_typescript_library
+  - eval `ssh-agent -s`
+
 install:
+  - ssh-add auto_commit_sdk_ar_typescript_library
   - chmod +x scr/publish.sh
 
 script:

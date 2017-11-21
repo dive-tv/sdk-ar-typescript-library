@@ -1,6 +1,6 @@
 {
   "name": "@dive-tv/sdk-ar-typescript-library",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Dive SDK Client for AR (Ad Resonance)",
   "browser": "./dist/ar.js",
   "main": "./dist/ar.js",
@@ -8,8 +8,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cross-env NODE_ENV=production webpack --config ./webpack.config.js --progress -p",
-    "version": "git checkout -b master && npm run build && git add .",
-    "postversion": "git push origin master --tags"
+    "version": "npm run build && git add .",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",

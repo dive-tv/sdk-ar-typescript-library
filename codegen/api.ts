@@ -67,10 +67,6 @@ export interface ARCatalogMovie {
      * Year of production
      */
     "year": number;
-    /**
-     * Name or names of the movie director(s)
-     */
-    "director": string;
 }
 
 /**
@@ -89,10 +85,6 @@ export interface ARCatalogSerie {
      * Year of production for first season
      */
     "year": number;
-    /**
-     * Name or names of the serie creator(s)
-     */
-    "creators": string;
     /**
      * Number of available seasons
      */
@@ -144,9 +136,13 @@ export interface ARCatalogTaxonomy {
      */
     "name": string;
     /**
+     * Taxonomy node breadcrumb from root
+     */
+    "breadcrumb"?: string;
+    /**
      * Indicates if this taxonomy node can be selected
      */
-    "is_leaf"?: boolean;
+    "is_selectable"?: boolean;
     /**
      * List of child nodes for this taxonomy node
      */
@@ -316,11 +312,11 @@ export interface AccessToken {
      */
     "refresh_token"?: string;
     /**
-     * Expiration time (in seconds)
+     * Expiration time (in seconds).
      */
     "expires_in"?: number;
     /**
-     * Granted auth scope.
+     * Granted auth scope
      */
     "scope"?: AccessTokenScopeEnum;
 }

@@ -316,11 +316,11 @@ export interface AccessToken {
      */
     "refresh_token"?: string;
     /**
-     * Expiration time (in seconds).
+     * Expiration time (in seconds)
      */
     "expires_in"?: number;
     /**
-     * Granted auth scope
+     * Granted auth scope.
      */
     "scope"?: AccessTokenScopeEnum;
 }
@@ -526,7 +526,7 @@ export const DefaultApiFetchParamCreator = {
         };
     },
     /**
-     * The token endpoint is used to obtain access tokens which allow clients to make API requests
+     * The token endpoint is used to obtain access tokens which allow clients to make API requests.
      * @summary Token endpoint
      * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
      * @param grantType Grant type used to obtain the token
@@ -684,7 +684,7 @@ export const DefaultApiFp = {
         };
     },
     /**
-     * The token endpoint is used to obtain access tokens which allow clients to make API requests
+     * The token endpoint is used to obtain access tokens which allow clients to make API requests.
      * @summary Token endpoint
      * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
      * @param grantType Grant type used to obtain the token
@@ -769,7 +769,7 @@ export class DefaultApi extends BaseAPI {
         return DefaultApiFp.postRegisterUser(params, options)(this.fetch, this.basePath);
     }
     /**
-     * The token endpoint is used to obtain access tokens which allow clients to make API requests
+     * The token endpoint is used to obtain access tokens which allow clients to make API requests.
      * @summary Token endpoint
      * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
      * @param grantType Grant type used to obtain the token
@@ -846,7 +846,7 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
             return DefaultApiFp.postRegisterUser(params, options)(fetch, basePath);
         },
         /**
-         * The token endpoint is used to obtain access tokens which allow clients to make API requests
+         * The token endpoint is used to obtain access tokens which allow clients to make API requests.
          * @summary Token endpoint
          * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
          * @param grantType Grant type used to obtain the token
@@ -1323,7 +1323,7 @@ export class CustomAPI extends DefaultApi {
   }
   /**
   * Token endpoint
-  * The token endpoint is used to obtain access tokens which allow clients to make API requests
+  * The token endpoint is used to obtain access tokens which allow clients to make API requests.
   * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
   * @param grantType Grant type used to obtain the token
   * @param acceptLanguage Client locale, as language-country

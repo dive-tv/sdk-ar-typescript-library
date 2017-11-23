@@ -140,10 +140,6 @@ export interface ARCatalogTaxonomy {
      */
     "breadcrumb"?: string;
     /**
-     * Indicates if this taxonomy node can be selected
-     */
-    "is_selectable"?: boolean;
-    /**
      * List of child nodes for this taxonomy node
      */
     "children"?: Array<ARCatalogTaxonomy>;
@@ -157,6 +153,10 @@ export interface ARSearchResultCategory {
      * Result category name
      */
     "category": string;
+    /**
+     * Number of detected contexts under this category
+     */
+    "context_count"?: number;
     /**
      * List of taxonomies detected for this category
      */
@@ -289,6 +289,10 @@ export interface ARSearchResultTaxonomy {
      * List of taxonomy nodes traversed from the root to this item
      */
     "breadcrumb": Array<string>;
+    /**
+     * Number of detected contexts under this taxonomy
+     */
+    "context_count"?: number;
     /**
      * List of movies where this taxonomy has been detected
      */

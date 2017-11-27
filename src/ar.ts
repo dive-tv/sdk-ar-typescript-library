@@ -5,6 +5,10 @@ import { CustomAPI } from "../codegen/api";
 * and performs business logic
 */
 export class ArAPI extends CustomAPI {
+  public constructor(params: any) {
+    super(params);
+    this.noAuthServices = ['postToken'];
+  }
   /**
    * Performs login on the Dive AR API
    * @summary Perform Login

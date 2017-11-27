@@ -872,7 +872,7 @@ export class CustomAPI extends DefaultApi {
   private storeTokenType: TokenStoreType = "webstorage";
   private tokenName: string = "dive_token";
   private diveTokenRefreshInterval: number | undefined;
-  private noAuthServices: string[] = [];
+  protected noAuthServices: string[] = [];
 
   constructor(params: { environment: "DEV" | "PRE" | "PRO", tokenName?: string, storeToken?: TokenStoreType, apiKey: string, deviceId?: string, fetch?: any } = { environment: "PRO", storeToken: "webstorage", tokenName: "dive_token", apiKey: ""}) {
     super(params.fetch, BASE_PATH);
@@ -1063,6 +1063,7 @@ export class CustomAPI extends DefaultApi {
       })
       .catch ((e: any) => {
         console.error("Error in postToken from postTokenAndSave", e);
+        reject(e);
       });
     });
   }
@@ -1100,6 +1101,7 @@ export class CustomAPI extends DefaultApi {
               resolve(result);
             })
             .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
               reject(errorRefreshingToken);
             });
         } else {
@@ -1143,6 +1145,7 @@ export class CustomAPI extends DefaultApi {
               resolve(result);
             })
             .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
               reject(errorRefreshingToken);
             });
         } else {
@@ -1185,6 +1188,7 @@ export class CustomAPI extends DefaultApi {
               resolve(result);
             })
             .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
               reject(errorRefreshingToken);
             });
         } else {
@@ -1227,6 +1231,7 @@ export class CustomAPI extends DefaultApi {
               resolve(result);
             })
             .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
               reject(errorRefreshingToken);
             });
         } else {
@@ -1271,6 +1276,7 @@ export class CustomAPI extends DefaultApi {
               resolve(result);
             })
             .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
               reject(errorRefreshingToken);
             });
         } else {
@@ -1313,6 +1319,7 @@ export class CustomAPI extends DefaultApi {
               resolve(result);
             })
             .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
               reject(errorRefreshingToken);
             });
         } else {
@@ -1359,6 +1366,7 @@ export class CustomAPI extends DefaultApi {
               resolve(result);
             })
             .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
               reject(errorRefreshingToken);
             });
         } else {

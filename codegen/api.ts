@@ -38,6 +38,20 @@ export class BaseAPI {
 }
 
 /**
+ * Catalog attribute
+ */
+export interface ARCatalogAttribute {
+    /**
+     * Attribute name
+     */
+    "name": string;
+    /**
+     * List of available values for this attribute
+     */
+    "values": Array<string>;
+}
+
+/**
  * Catalog category
  */
 export interface ARCatalogCategory {
@@ -362,6 +376,30 @@ export interface RegistrationDataRequest {
  */
 export const DefaultApiFetchParamCreator = {
     /**
+     * Returns the list of attributes and values which are ready for AR analysis
+     * @summary List AR-available context attributes
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     */
+    getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any): FetchArgs {
+        // verify required parameter "authorization" is set
+        if (params["authorization"] == null) {
+            throw new Error("Missing required parameter authorization when calling getARAttributes");
+        }
+        const baseUrl = `/ar/attributes`;
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = Object.assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        fetchOptions.headers = Object.assign({
+            "Authorization": params["authorization"],"Accept-Language": params["acceptLanguage"],
+        }, contentTypeHeader, fetchOptions.headers);
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
      * Returns the list of movies which are ready for AR analysis
      * @summary List AR-available movies
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -573,6 +611,24 @@ export const DefaultApiFetchParamCreator = {
  */
 export const DefaultApiFp = {
     /**
+     * Returns the list of attributes and values which are ready for AR analysis
+     * @summary List AR-available context attributes
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     */
+    getARAttributes(params: { "authorization": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogAttribute>> {
+        const fetchArgs = DefaultApiFetchParamCreator.getARAttributes(params, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
      * Returns the list of movies which are ready for AR analysis
      * @summary List AR-available movies
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -712,6 +768,15 @@ export const DefaultApiFp = {
  */
 export class DefaultApi extends BaseAPI {
     /**
+     * Returns the list of attributes and values which are ready for AR analysis
+     * @summary List AR-available context attributes
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     */
+    getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
+        return DefaultApiFp.getARAttributes(params, options)(this.fetch, this.basePath);
+    }
+    /**
      * Returns the list of movies which are ready for AR analysis
      * @summary List AR-available movies
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -788,6 +853,15 @@ export class DefaultApi extends BaseAPI {
  */
 export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
     return {
+        /**
+         * Returns the list of attributes and values which are ready for AR analysis
+         * @summary List AR-available context attributes
+         * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+         * @param acceptLanguage Client locale, as language-country
+         */
+        getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
+            return DefaultApiFp.getARAttributes(params, options)(fetch, basePath);
+        },
         /**
          * Returns the list of movies which are ready for AR analysis
          * @summary List AR-available movies
@@ -1064,6 +1138,49 @@ export class CustomAPI extends DefaultApi {
       .catch ((e: any) => {
         console.error("Error in postToken from postTokenAndSave", e);
         reject(e);
+      });
+    });
+  }
+  /**
+  * List AR-available context attributes
+  * Returns the list of attributes and values which are ready for AR analysis
+  * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+  * @param acceptLanguage Client locale, as language-country
+  */
+  public getARAttributes(params: {  }, options?: any) {
+    let newParams: any = this.gatherCommonHeaders(params);
+    return new Promise<Array<ARCatalogAttribute>>((resolve: any, reject: any) => {
+      super.getARAttributes(newParams)
+      .then((result: Array<ARCatalogAttribute>) => {
+        resolve(result);
+      })
+      .catch ((error: any) => {
+        if (error) {
+            console.log("%c REST error - getARAttributes", "background: black; color: #FE2EF7; padding: 0 10px;", error);
+        }
+        if (error.status === 401 && this.serviceRequiresToken("getARAttributes")) {
+            this.refreshToken()
+            .catch ((error: any) => {
+              if (this.deviceId) {
+                return this.postTokenAndSave({ grantType: "device_credentials", deviceId: this.deviceId });
+              } else {
+                throw new Error("Can not refresh token (no device id)");
+              }
+            })
+            .then(() => {
+              newParams = this.gatherCommonHeaders(params);
+              return super.getARAttributes(newParams);
+            })
+            .then((result: any) => {
+              resolve(result);
+            })
+            .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
+              reject(errorRefreshingToken);
+            });
+        } else {
+            reject(error);
+        }
       });
     });
   }

@@ -160,6 +160,24 @@ export interface ARCatalogTaxonomy {
 }
 
 /**
+ * Context search request
+ */
+export interface ARSearchRequest {
+    /**
+     * Optional list of searched movie and chapter IDs
+     */
+    "movie_ids"?: Array<string>;
+    /**
+     * Optional list of searched context taxonomy IDs
+     */
+    "taxonomy_ids"?: Array<string>;
+    /**
+     * Optional list of searched context attributes and values
+     */
+    "attributes"?: Array<ARCatalogAttribute>;
+}
+
+/**
  * Context search results category
  */
 export interface ARSearchResultCategory {
@@ -564,6 +582,35 @@ export const DefaultApiFetchParamCreator = {
         };
     },
     /**
+     * Returns the list of contextual items found after filtering by movie ID and context ID
+     * @summary Search contextual items
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param searchRequest Search terms
+     */
+    postSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any): FetchArgs {
+        // verify required parameter "authorization" is set
+        if (params["authorization"] == null) {
+            throw new Error("Missing required parameter authorization when calling postSearch");
+        }
+        const baseUrl = `/ar/search`;
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = Object.assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["searchRequest"]) {
+            fetchOptions.body = JSON.stringify(params["searchRequest"] || {});
+        }
+        fetchOptions.headers = Object.assign({
+            "Authorization": params["authorization"],"Accept-Language": params["acceptLanguage"],
+        }, contentTypeHeader, fetchOptions.headers);
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
      * The token endpoint is used to obtain access tokens which allow clients to make API requests
      * @summary Token endpoint
      * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
@@ -740,6 +787,25 @@ export const DefaultApiFp = {
         };
     },
     /**
+     * Returns the list of contextual items found after filtering by movie ID and context ID
+     * @summary Search contextual items
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param searchRequest Search terms
+     */
+    postSearch(params: { "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSearchResultCategory>> {
+        const fetchArgs = DefaultApiFetchParamCreator.postSearch(params, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
      * The token endpoint is used to obtain access tokens which allow clients to make API requests
      * @summary Token endpoint
      * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
@@ -834,6 +900,16 @@ export class DefaultApi extends BaseAPI {
         return DefaultApiFp.postRegisterUser(params, options)(this.fetch, this.basePath);
     }
     /**
+     * Returns the list of contextual items found after filtering by movie ID and context ID
+     * @summary Search contextual items
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param searchRequest Search terms
+     */
+    postSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any) {
+        return DefaultApiFp.postSearch(params, options)(this.fetch, this.basePath);
+    }
+    /**
      * The token endpoint is used to obtain access tokens which allow clients to make API requests
      * @summary Token endpoint
      * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
@@ -920,6 +996,16 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
             return DefaultApiFp.postRegisterUser(params, options)(fetch, basePath);
         },
         /**
+         * Returns the list of contextual items found after filtering by movie ID and context ID
+         * @summary Search contextual items
+         * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+         * @param acceptLanguage Client locale, as language-country
+         * @param searchRequest Search terms
+         */
+        postSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any) {
+            return DefaultApiFp.postSearch(params, options)(fetch, basePath);
+        },
+        /**
          * The token endpoint is used to obtain access tokens which allow clients to make API requests
          * @summary Token endpoint
          * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
@@ -942,11 +1028,11 @@ export class CustomAPI extends DefaultApi {
   public locale: string;
   private apiKey: string;
   private deviceId: string;
-  private environment: string = "PRO";
   private storeTokenType: TokenStoreType = "webstorage";
   private tokenName: string = "dive_token";
   private diveTokenRefreshInterval: number | undefined;
   protected noAuthServices: string[] = [];
+  protected environment: string = "PRO";
 
   constructor(params: { environment: "DEV" | "PRE" | "PRO", tokenName?: string, storeToken?: TokenStoreType, apiKey: string, deviceId?: string, fetch?: any } = { environment: "PRO", storeToken: "webstorage", tokenName: "dive_token", apiKey: ""}) {
     super(params.fetch, BASE_PATH);
@@ -1431,6 +1517,50 @@ export class CustomAPI extends DefaultApi {
             .then(() => {
               newParams = this.gatherCommonHeaders(params);
               return super.postRegisterUser(newParams);
+            })
+            .then((result: any) => {
+              resolve(result);
+            })
+            .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
+              reject(errorRefreshingToken);
+            });
+        } else {
+            reject(error);
+        }
+      });
+    });
+  }
+  /**
+  * Search contextual items
+  * Returns the list of contextual items found after filtering by movie ID and context ID
+  * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+  * @param acceptLanguage Client locale, as language-country
+  * @param searchRequest Search terms
+  */
+  public postSearch(params: {  "searchRequest"?: ARSearchRequest; }, options?: any) {
+    let newParams: any = this.gatherCommonHeaders(params);
+    return new Promise<Array<ARSearchResultCategory>>((resolve: any, reject: any) => {
+      super.postSearch(newParams)
+      .then((result: Array<ARSearchResultCategory>) => {
+        resolve(result);
+      })
+      .catch ((error: any) => {
+        if (error) {
+            console.log("%c REST error - postSearch", "background: black; color: #FE2EF7; padding: 0 10px;", error);
+        }
+        if (error.status === 401 && this.serviceRequiresToken("postSearch")) {
+            this.refreshToken()
+            .catch ((error: any) => {
+              if (this.deviceId) {
+                return this.postTokenAndSave({ grantType: "device_credentials", deviceId: this.deviceId });
+              } else {
+                throw new Error("Can not refresh token (no device id)");
+              }
+            })
+            .then(() => {
+              newParams = this.gatherCommonHeaders(params);
+              return super.postSearch(newParams);
             })
             .then((result: any) => {
               resolve(result);

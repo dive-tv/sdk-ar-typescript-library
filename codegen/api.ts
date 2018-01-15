@@ -524,20 +524,14 @@ export const DefaultApiFetchParamCreator = {
      * @summary Search contextual items
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
-     * @param movieIds Comma-separated list of movie IDs subset where search shoould be performed
-     * @param taxonomyIds Comma-separated list of the taxonomy IDs subset that should be returned by the search query
      */
-    getSearch(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; "taxonomyIds"?: string; }, options?: any): FetchArgs {
+    getSearch(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any): FetchArgs {
         // verify required parameter "authorization" is set
         if (params["authorization"] == null) {
             throw new Error("Missing required parameter authorization when calling getSearch");
         }
         const baseUrl = `/ar/search`;
         let urlObj = url.parse(baseUrl, true);
-        urlObj.query = Object.assign({}, urlObj.query, {
-            "movie_ids": params["movieIds"],
-            "taxonomy_ids": params["taxonomyIds"],
-        });
         let fetchOptions: RequestInit = Object.assign({}, { method: "GET" }, options);
 
         let contentTypeHeader: Dictionary<string> = {};
@@ -753,10 +747,8 @@ export const DefaultApiFp = {
      * @summary Search contextual items
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
-     * @param movieIds Comma-separated list of movie IDs subset where search shoould be performed
-     * @param taxonomyIds Comma-separated list of the taxonomy IDs subset that should be returned by the search query
      */
-    getSearch(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; "taxonomyIds"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSearchResultCategory>> {
+    getSearch(params: { "authorization": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSearchResultCategory>> {
         const fetchArgs = DefaultApiFetchParamCreator.getSearch(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
@@ -884,10 +876,8 @@ export class DefaultApi extends BaseAPI {
      * @summary Search contextual items
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
-     * @param movieIds Comma-separated list of movie IDs subset where search shoould be performed
-     * @param taxonomyIds Comma-separated list of the taxonomy IDs subset that should be returned by the search query
      */
-    getSearch(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; "taxonomyIds"?: string; }, options?: any) {
+    getSearch(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
         return DefaultApiFp.getSearch(params, options)(this.fetch, this.basePath);
     }
     /**
@@ -980,10 +970,8 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
          * @summary Search contextual items
          * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
          * @param acceptLanguage Client locale, as language-country
-         * @param movieIds Comma-separated list of movie IDs subset where search shoould be performed
-         * @param taxonomyIds Comma-separated list of the taxonomy IDs subset that should be returned by the search query
          */
-        getSearch(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; "taxonomyIds"?: string; }, options?: any) {
+        getSearch(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
             return DefaultApiFp.getSearch(params, options)(fetch, basePath);
         },
         /**
@@ -1448,10 +1436,8 @@ export class CustomAPI extends DefaultApi {
   * Returns the list of contextual items found after filtering by movie ID and context ID
   * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
   * @param acceptLanguage Client locale, as language-country
-  * @param movieIds Comma-separated list of movie IDs subset where search shoould be performed
-  * @param taxonomyIds Comma-separated list of the taxonomy IDs subset that should be returned by the search query
   */
-  public getSearch(params: {  "movieIds"?: string; "taxonomyIds"?: string; }, options?: any) {
+  public getSearch(params: {  }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
     return new Promise<Array<ARSearchResultCategory>>((resolve: any, reject: any) => {
       super.getSearch(newParams)

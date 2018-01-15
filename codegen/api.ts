@@ -196,7 +196,7 @@ export interface ARSearchResultCategory {
 }
 
 /**
- * Context search results movie context
+ * Search results movie context
  */
 export interface ARSearchResultContext {
     /**
@@ -300,9 +300,39 @@ export interface ARSearchResultMovie {
      */
     "serie_title"?: string;
     /**
-     * List of contexts detected on this movie related to the parent taxonomy
+     * List of contexts detected on this movie related to the parent taxonomy (returned on context search)
      */
-    "contexts": Array<ARSearchResultContext>;
+    "contexts"?: Array<ARSearchResultContext>;
+    /**
+     * List of movie scenes which fulfill search terms (returned on scene search)
+     */
+    "scenes"?: Array<ARSearchResultScene>;
+}
+
+/**
+ * Search results movie scene
+ */
+export interface ARSearchResultScene {
+    /**
+     * Scene ID
+     */
+    "sc_id": string;
+    /**
+     * Scene title
+     */
+    "title": string;
+    /**
+     * Scene start timestamp in seconds
+     */
+    "start_ts": number;
+    /**
+     * Scene end timestamp in seconds
+     */
+    "end_ts": number;
+    /**
+     * List of key frame image URLs for this scene
+     */
+    "kfts": Array<string>;
 }
 
 /**
@@ -394,18 +424,22 @@ export interface RegistrationDataRequest {
  */
 export const DefaultApiFetchParamCreator = {
     /**
-     * Returns the list of attributes and values which are ready for AR analysis
+     * Returns the list of attributes and values on an optional subset of movies
      * @summary List AR-available context attributes
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Comma-separated list of movie IDs to filter returned attributes
      */
-    getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any): FetchArgs {
+    getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any): FetchArgs {
         // verify required parameter "authorization" is set
         if (params["authorization"] == null) {
             throw new Error("Missing required parameter authorization when calling getARAttributes");
         }
         const baseUrl = `/ar/attributes`;
         let urlObj = url.parse(baseUrl, true);
+        urlObj.query = Object.assign({}, urlObj.query, {
+            "movie_ids": params["movieIds"],
+        });
         let fetchOptions: RequestInit = Object.assign({}, { method: "GET" }, options);
 
         let contentTypeHeader: Dictionary<string> = {};
@@ -496,42 +530,22 @@ export const DefaultApiFetchParamCreator = {
         };
     },
     /**
-     * Returns the list of taxonomies which are ready for AR analysis
+     * Returns the list of taxonomies on an optional subset of movies
      * @summary List AR-available taxonomies
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Comma-separated list of movie IDs to filter returned taxonomies
      */
-    getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any): FetchArgs {
+    getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any): FetchArgs {
         // verify required parameter "authorization" is set
         if (params["authorization"] == null) {
             throw new Error("Missing required parameter authorization when calling getARTaxonomies");
         }
         const baseUrl = `/ar/taxonomies`;
         let urlObj = url.parse(baseUrl, true);
-        let fetchOptions: RequestInit = Object.assign({}, { method: "GET" }, options);
-
-        let contentTypeHeader: Dictionary<string> = {};
-        fetchOptions.headers = Object.assign({
-            "Authorization": params["authorization"],"Accept-Language": params["acceptLanguage"],
-        }, contentTypeHeader, fetchOptions.headers);
-        return {
-            url: url.format(urlObj),
-            options: fetchOptions,
-        };
-    },
-    /**
-     * Returns the list of contextual items found after filtering by movie ID and context ID
-     * @summary Search contextual items
-     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
-     * @param acceptLanguage Client locale, as language-country
-     */
-    getSearch(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any): FetchArgs {
-        // verify required parameter "authorization" is set
-        if (params["authorization"] == null) {
-            throw new Error("Missing required parameter authorization when calling getSearch");
-        }
-        const baseUrl = `/ar/search`;
-        let urlObj = url.parse(baseUrl, true);
+        urlObj.query = Object.assign({}, urlObj.query, {
+            "movie_ids": params["movieIds"],
+        });
         let fetchOptions: RequestInit = Object.assign({}, { method: "GET" }, options);
 
         let contentTypeHeader: Dictionary<string> = {};
@@ -576,8 +590,8 @@ export const DefaultApiFetchParamCreator = {
         };
     },
     /**
-     * Returns the list of contextual items found after filtering by movie ID and context ID
-     * @summary Search contextual items
+     * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
+     * @summary Search contexts grouped at movie level
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
@@ -587,7 +601,36 @@ export const DefaultApiFetchParamCreator = {
         if (params["authorization"] == null) {
             throw new Error("Missing required parameter authorization when calling postSearch");
         }
-        const baseUrl = `/ar/search`;
+        const baseUrl = `/ar/search/contexts`;
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = Object.assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["searchRequest"]) {
+            fetchOptions.body = JSON.stringify(params["searchRequest"] || {});
+        }
+        fetchOptions.headers = Object.assign({
+            "Authorization": params["authorization"],"Accept-Language": params["acceptLanguage"],
+        }, contentTypeHeader, fetchOptions.headers);
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * Returns the list of scenes which fulfill the requested search filters, grouped by movie
+     * @summary Search contextual items grouped at scene level
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param searchRequest Search terms
+     */
+    postSearchScenes(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any): FetchArgs {
+        // verify required parameter "authorization" is set
+        if (params["authorization"] == null) {
+            throw new Error("Missing required parameter authorization when calling postSearchScenes");
+        }
+        const baseUrl = `/ar/search/scenes`;
         let urlObj = url.parse(baseUrl, true);
         let fetchOptions: RequestInit = Object.assign({}, { method: "POST" }, options);
 
@@ -652,12 +695,13 @@ export const DefaultApiFetchParamCreator = {
  */
 export const DefaultApiFp = {
     /**
-     * Returns the list of attributes and values which are ready for AR analysis
+     * Returns the list of attributes and values on an optional subset of movies
      * @summary List AR-available context attributes
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Comma-separated list of movie IDs to filter returned attributes
      */
-    getARAttributes(params: { "authorization": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogAttribute>> {
+    getARAttributes(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogAttribute>> {
         const fetchArgs = DefaultApiFetchParamCreator.getARAttributes(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
@@ -725,31 +769,14 @@ export const DefaultApiFp = {
         };
     },
     /**
-     * Returns the list of taxonomies which are ready for AR analysis
+     * Returns the list of taxonomies on an optional subset of movies
      * @summary List AR-available taxonomies
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Comma-separated list of movie IDs to filter returned taxonomies
      */
-    getARTaxonomies(params: { "authorization": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogCategory>> {
+    getARTaxonomies(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogCategory>> {
         const fetchArgs = DefaultApiFetchParamCreator.getARTaxonomies(params, options);
-        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
-            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
-                if (response.status >= 200 && response.status < 300) {
-                    return response.json();
-                } else {
-                    throw response;
-                }
-            });
-        };
-    },
-    /**
-     * Returns the list of contextual items found after filtering by movie ID and context ID
-     * @summary Search contextual items
-     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
-     * @param acceptLanguage Client locale, as language-country
-     */
-    getSearch(params: { "authorization": string; "acceptLanguage"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSearchResultCategory>> {
-        const fetchArgs = DefaultApiFetchParamCreator.getSearch(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -779,14 +806,33 @@ export const DefaultApiFp = {
         };
     },
     /**
-     * Returns the list of contextual items found after filtering by movie ID and context ID
-     * @summary Search contextual items
+     * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
+     * @summary Search contexts grouped at movie level
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
      */
     postSearch(params: { "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSearchResultCategory>> {
         const fetchArgs = DefaultApiFetchParamCreator.postSearch(params, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * Returns the list of scenes which fulfill the requested search filters, grouped by movie
+     * @summary Search contextual items grouped at scene level
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param searchRequest Search terms
+     */
+    postSearchScenes(params: { "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSearchResultMovie>> {
+        const fetchArgs = DefaultApiFetchParamCreator.postSearchScenes(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -826,12 +872,13 @@ export const DefaultApiFp = {
  */
 export class DefaultApi extends BaseAPI {
     /**
-     * Returns the list of attributes and values which are ready for AR analysis
+     * Returns the list of attributes and values on an optional subset of movies
      * @summary List AR-available context attributes
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Comma-separated list of movie IDs to filter returned attributes
      */
-    getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
+    getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any) {
         return DefaultApiFp.getARAttributes(params, options)(this.fetch, this.basePath);
     }
     /**
@@ -863,22 +910,14 @@ export class DefaultApi extends BaseAPI {
         return DefaultApiFp.getARSeries(params, options)(this.fetch, this.basePath);
     }
     /**
-     * Returns the list of taxonomies which are ready for AR analysis
+     * Returns the list of taxonomies on an optional subset of movies
      * @summary List AR-available taxonomies
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Comma-separated list of movie IDs to filter returned taxonomies
      */
-    getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
+    getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any) {
         return DefaultApiFp.getARTaxonomies(params, options)(this.fetch, this.basePath);
-    }
-    /**
-     * Returns the list of contextual items found after filtering by movie ID and context ID
-     * @summary Search contextual items
-     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
-     * @param acceptLanguage Client locale, as language-country
-     */
-    getSearch(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
-        return DefaultApiFp.getSearch(params, options)(this.fetch, this.basePath);
     }
     /**
      * Registers a new user into Add Resonance application using the user name and provided password
@@ -890,14 +929,24 @@ export class DefaultApi extends BaseAPI {
         return DefaultApiFp.postRegisterUser(params, options)(this.fetch, this.basePath);
     }
     /**
-     * Returns the list of contextual items found after filtering by movie ID and context ID
-     * @summary Search contextual items
+     * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
+     * @summary Search contexts grouped at movie level
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
      */
     postSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any) {
         return DefaultApiFp.postSearch(params, options)(this.fetch, this.basePath);
+    }
+    /**
+     * Returns the list of scenes which fulfill the requested search filters, grouped by movie
+     * @summary Search contextual items grouped at scene level
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param searchRequest Search terms
+     */
+    postSearchScenes(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any) {
+        return DefaultApiFp.postSearchScenes(params, options)(this.fetch, this.basePath);
     }
     /**
      * The token endpoint is used to obtain access tokens which allow clients to make API requests
@@ -920,12 +969,13 @@ export class DefaultApi extends BaseAPI {
 export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
     return {
         /**
-         * Returns the list of attributes and values which are ready for AR analysis
+         * Returns the list of attributes and values on an optional subset of movies
          * @summary List AR-available context attributes
          * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
          * @param acceptLanguage Client locale, as language-country
+         * @param movieIds Comma-separated list of movie IDs to filter returned attributes
          */
-        getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
+        getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any) {
             return DefaultApiFp.getARAttributes(params, options)(fetch, basePath);
         },
         /**
@@ -957,22 +1007,14 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
             return DefaultApiFp.getARSeries(params, options)(fetch, basePath);
         },
         /**
-         * Returns the list of taxonomies which are ready for AR analysis
+         * Returns the list of taxonomies on an optional subset of movies
          * @summary List AR-available taxonomies
          * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
          * @param acceptLanguage Client locale, as language-country
+         * @param movieIds Comma-separated list of movie IDs to filter returned taxonomies
          */
-        getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
+        getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any) {
             return DefaultApiFp.getARTaxonomies(params, options)(fetch, basePath);
-        },
-        /**
-         * Returns the list of contextual items found after filtering by movie ID and context ID
-         * @summary Search contextual items
-         * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
-         * @param acceptLanguage Client locale, as language-country
-         */
-        getSearch(params: {  "authorization": string; "acceptLanguage"?: string; }, options?: any) {
-            return DefaultApiFp.getSearch(params, options)(fetch, basePath);
         },
         /**
          * Registers a new user into Add Resonance application using the user name and provided password
@@ -984,14 +1026,24 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
             return DefaultApiFp.postRegisterUser(params, options)(fetch, basePath);
         },
         /**
-         * Returns the list of contextual items found after filtering by movie ID and context ID
-         * @summary Search contextual items
+         * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
+         * @summary Search contexts grouped at movie level
          * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
          * @param acceptLanguage Client locale, as language-country
          * @param searchRequest Search terms
          */
         postSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any) {
             return DefaultApiFp.postSearch(params, options)(fetch, basePath);
+        },
+        /**
+         * Returns the list of scenes which fulfill the requested search filters, grouped by movie
+         * @summary Search contextual items grouped at scene level
+         * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+         * @param acceptLanguage Client locale, as language-country
+         * @param searchRequest Search terms
+         */
+        postSearchScenes(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any) {
+            return DefaultApiFp.postSearchScenes(params, options)(fetch, basePath);
         },
         /**
          * The token endpoint is used to obtain access tokens which allow clients to make API requests
@@ -1217,11 +1269,12 @@ export class CustomAPI extends DefaultApi {
   }
   /**
   * List AR-available context attributes
-  * Returns the list of attributes and values which are ready for AR analysis
+  * Returns the list of attributes and values on an optional subset of movies
   * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
   * @param acceptLanguage Client locale, as language-country
+  * @param movieIds Comma-separated list of movie IDs to filter returned attributes
   */
-  public getARAttributes(params: {  }, options?: any) {
+  public getARAttributes(params: {  "movieIds"?: string; }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
     return new Promise<Array<ARCatalogAttribute>>((resolve: any, reject: any) => {
       super.getARAttributes(newParams)
@@ -1390,11 +1443,12 @@ export class CustomAPI extends DefaultApi {
   }
   /**
   * List AR-available taxonomies
-  * Returns the list of taxonomies which are ready for AR analysis
+  * Returns the list of taxonomies on an optional subset of movies
   * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
   * @param acceptLanguage Client locale, as language-country
+  * @param movieIds Comma-separated list of movie IDs to filter returned taxonomies
   */
-  public getARTaxonomies(params: {  }, options?: any) {
+  public getARTaxonomies(params: {  "movieIds"?: string; }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
     return new Promise<Array<ARCatalogCategory>>((resolve: any, reject: any) => {
       super.getARTaxonomies(newParams)
@@ -1417,49 +1471,6 @@ export class CustomAPI extends DefaultApi {
             .then(() => {
               newParams = this.gatherCommonHeaders(params);
               return super.getARTaxonomies(newParams);
-            })
-            .then((result: any) => {
-              resolve(result);
-            })
-            .catch ((errorRefreshingToken: any) => {
-              console.error('Error refreshing token', errorRefreshingToken);
-              reject(errorRefreshingToken);
-            });
-        } else {
-            reject(error);
-        }
-      });
-    });
-  }
-  /**
-  * Search contextual items
-  * Returns the list of contextual items found after filtering by movie ID and context ID
-  * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
-  * @param acceptLanguage Client locale, as language-country
-  */
-  public getSearch(params: {  }, options?: any) {
-    let newParams: any = this.gatherCommonHeaders(params);
-    return new Promise<Array<ARSearchResultCategory>>((resolve: any, reject: any) => {
-      super.getSearch(newParams)
-      .then((result: Array<ARSearchResultCategory>) => {
-        resolve(result);
-      })
-      .catch ((error: any) => {
-        if (error) {
-            console.log("%c REST error - getSearch", "background: black; color: #FE2EF7; padding: 0 10px;", error);
-        }
-        if (error.status === 401 && this.serviceRequiresToken("getSearch")) {
-            this.refreshToken()
-            .catch ((error: any) => {
-              if (this.deviceId) {
-                return this.postTokenAndSave({ grantType: "device_credentials", deviceId: this.deviceId });
-              } else {
-                throw new Error("Can not refresh token (no device id)");
-              }
-            })
-            .then(() => {
-              newParams = this.gatherCommonHeaders(params);
-              return super.getSearch(newParams);
             })
             .then((result: any) => {
               resolve(result);
@@ -1518,8 +1529,8 @@ export class CustomAPI extends DefaultApi {
     });
   }
   /**
-  * Search contextual items
-  * Returns the list of contextual items found after filtering by movie ID and context ID
+  * Search contexts grouped at movie level
+  * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
   * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
   * @param acceptLanguage Client locale, as language-country
   * @param searchRequest Search terms
@@ -1547,6 +1558,50 @@ export class CustomAPI extends DefaultApi {
             .then(() => {
               newParams = this.gatherCommonHeaders(params);
               return super.postSearch(newParams);
+            })
+            .then((result: any) => {
+              resolve(result);
+            })
+            .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
+              reject(errorRefreshingToken);
+            });
+        } else {
+            reject(error);
+        }
+      });
+    });
+  }
+  /**
+  * Search contextual items grouped at scene level
+  * Returns the list of scenes which fulfill the requested search filters, grouped by movie
+  * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+  * @param acceptLanguage Client locale, as language-country
+  * @param searchRequest Search terms
+  */
+  public postSearchScenes(params: {  "searchRequest"?: ARSearchRequest; }, options?: any) {
+    let newParams: any = this.gatherCommonHeaders(params);
+    return new Promise<Array<ARSearchResultMovie>>((resolve: any, reject: any) => {
+      super.postSearchScenes(newParams)
+      .then((result: Array<ARSearchResultMovie>) => {
+        resolve(result);
+      })
+      .catch ((error: any) => {
+        if (error) {
+            console.log("%c REST error - postSearchScenes", "background: black; color: #FE2EF7; padding: 0 10px;", error);
+        }
+        if (error.status === 401 && this.serviceRequiresToken("postSearchScenes")) {
+            this.refreshToken()
+            .catch ((error: any) => {
+              if (this.deviceId) {
+                return this.postTokenAndSave({ grantType: "device_credentials", deviceId: this.deviceId });
+              } else {
+                throw new Error("Can not refresh token (no device id)");
+              }
+            })
+            .then(() => {
+              newParams = this.gatherCommonHeaders(params);
+              return super.postSearchScenes(newParams);
             })
             .then((result: any) => {
               resolve(result);

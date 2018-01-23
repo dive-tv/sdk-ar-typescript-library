@@ -428,9 +428,9 @@ export const DefaultApiFetchParamCreator = {
      * @summary List AR-available context attributes
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
-     * @param movieIds Comma-separated list of movie IDs to filter returned attributes
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
      */
-    getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any): FetchArgs {
+    getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any): FetchArgs {
         // verify required parameter "authorization" is set
         if (params["authorization"] == null) {
             throw new Error("Missing required parameter authorization when calling getARAttributes");
@@ -534,9 +534,9 @@ export const DefaultApiFetchParamCreator = {
      * @summary List AR-available taxonomies
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
-     * @param movieIds Comma-separated list of movie IDs to filter returned taxonomies
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
      */
-    getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any): FetchArgs {
+    getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any): FetchArgs {
         // verify required parameter "authorization" is set
         if (params["authorization"] == null) {
             throw new Error("Missing required parameter authorization when calling getARTaxonomies");
@@ -591,7 +591,7 @@ export const DefaultApiFetchParamCreator = {
     },
     /**
      * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
-     * @summary Search contexts grouped at movie level
+     * @summary Search contexts at movie level
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
@@ -620,7 +620,7 @@ export const DefaultApiFetchParamCreator = {
     },
     /**
      * Returns the list of scenes which fulfill the requested search filters, grouped by movie
-     * @summary Search contextual items grouped at scene level
+     * @summary Search contexts at scene level
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
@@ -699,9 +699,9 @@ export const DefaultApiFp = {
      * @summary List AR-available context attributes
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
-     * @param movieIds Comma-separated list of movie IDs to filter returned attributes
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
      */
-    getARAttributes(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogAttribute>> {
+    getARAttributes(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogAttribute>> {
         const fetchArgs = DefaultApiFetchParamCreator.getARAttributes(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
@@ -773,9 +773,9 @@ export const DefaultApiFp = {
      * @summary List AR-available taxonomies
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
-     * @param movieIds Comma-separated list of movie IDs to filter returned taxonomies
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
      */
-    getARTaxonomies(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: string;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogCategory>> {
+    getARTaxonomies(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogCategory>> {
         const fetchArgs = DefaultApiFetchParamCreator.getARTaxonomies(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
@@ -807,7 +807,7 @@ export const DefaultApiFp = {
     },
     /**
      * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
-     * @summary Search contexts grouped at movie level
+     * @summary Search contexts at movie level
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
@@ -826,7 +826,7 @@ export const DefaultApiFp = {
     },
     /**
      * Returns the list of scenes which fulfill the requested search filters, grouped by movie
-     * @summary Search contextual items grouped at scene level
+     * @summary Search contexts at scene level
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
@@ -876,9 +876,9 @@ export class DefaultApi extends BaseAPI {
      * @summary List AR-available context attributes
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
-     * @param movieIds Comma-separated list of movie IDs to filter returned attributes
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
      */
-    getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any) {
+    getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
         return DefaultApiFp.getARAttributes(params, options)(this.fetch, this.basePath);
     }
     /**
@@ -914,9 +914,9 @@ export class DefaultApi extends BaseAPI {
      * @summary List AR-available taxonomies
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
-     * @param movieIds Comma-separated list of movie IDs to filter returned taxonomies
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
      */
-    getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any) {
+    getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
         return DefaultApiFp.getARTaxonomies(params, options)(this.fetch, this.basePath);
     }
     /**
@@ -930,7 +930,7 @@ export class DefaultApi extends BaseAPI {
     }
     /**
      * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
-     * @summary Search contexts grouped at movie level
+     * @summary Search contexts at movie level
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
@@ -940,7 +940,7 @@ export class DefaultApi extends BaseAPI {
     }
     /**
      * Returns the list of scenes which fulfill the requested search filters, grouped by movie
-     * @summary Search contextual items grouped at scene level
+     * @summary Search contexts at scene level
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
@@ -973,9 +973,9 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
          * @summary List AR-available context attributes
          * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
          * @param acceptLanguage Client locale, as language-country
-         * @param movieIds Comma-separated list of movie IDs to filter returned attributes
+         * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
          */
-        getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any) {
+        getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
             return DefaultApiFp.getARAttributes(params, options)(fetch, basePath);
         },
         /**
@@ -1011,9 +1011,9 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
          * @summary List AR-available taxonomies
          * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
          * @param acceptLanguage Client locale, as language-country
-         * @param movieIds Comma-separated list of movie IDs to filter returned taxonomies
+         * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
          */
-        getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: string; }, options?: any) {
+        getARTaxonomies(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
             return DefaultApiFp.getARTaxonomies(params, options)(fetch, basePath);
         },
         /**
@@ -1027,7 +1027,7 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
         },
         /**
          * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
-         * @summary Search contexts grouped at movie level
+         * @summary Search contexts at movie level
          * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
          * @param acceptLanguage Client locale, as language-country
          * @param searchRequest Search terms
@@ -1037,7 +1037,7 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
         },
         /**
          * Returns the list of scenes which fulfill the requested search filters, grouped by movie
-         * @summary Search contextual items grouped at scene level
+         * @summary Search contexts at scene level
          * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
          * @param acceptLanguage Client locale, as language-country
          * @param searchRequest Search terms
@@ -1272,9 +1272,9 @@ export class CustomAPI extends DefaultApi {
   * Returns the list of attributes and values on an optional subset of movies
   * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
   * @param acceptLanguage Client locale, as language-country
-  * @param movieIds Comma-separated list of movie IDs to filter returned attributes
+  * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
   */
-  public getARAttributes(params: {  "movieIds"?: string; }, options?: any) {
+  public getARAttributes(params: {  "movieIds"?: Array<string>; }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
     return new Promise<Array<ARCatalogAttribute>>((resolve: any, reject: any) => {
       super.getARAttributes(newParams)
@@ -1446,9 +1446,9 @@ export class CustomAPI extends DefaultApi {
   * Returns the list of taxonomies on an optional subset of movies
   * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
   * @param acceptLanguage Client locale, as language-country
-  * @param movieIds Comma-separated list of movie IDs to filter returned taxonomies
+  * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
   */
-  public getARTaxonomies(params: {  "movieIds"?: string; }, options?: any) {
+  public getARTaxonomies(params: {  "movieIds"?: Array<string>; }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
     return new Promise<Array<ARCatalogCategory>>((resolve: any, reject: any) => {
       super.getARTaxonomies(newParams)
@@ -1529,7 +1529,7 @@ export class CustomAPI extends DefaultApi {
     });
   }
   /**
-  * Search contexts grouped at movie level
+  * Search contexts at movie level
   * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
   * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
   * @param acceptLanguage Client locale, as language-country
@@ -1573,7 +1573,7 @@ export class CustomAPI extends DefaultApi {
     });
   }
   /**
-  * Search contextual items grouped at scene level
+  * Search contexts at scene level
   * Returns the list of scenes which fulfill the requested search filters, grouped by movie
   * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
   * @param acceptLanguage Client locale, as language-country

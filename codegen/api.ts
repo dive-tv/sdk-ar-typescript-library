@@ -1136,11 +1136,21 @@ export class CustomAPI extends DefaultApi {
     } else {
         newParams.authorization = `Basic ${this.apiKey}`;
     }
+    /*
     if (params.acceptLanguage == null && this.locale !== null) {
         newParams.acceptLanguage = this.locale;
     }
     if (params["Accept-Language"] == null && this.locale !== null) {
         newParams["Accept-Language"] = this.locale;
+    }*/
+    if ( this.locale != null) {
+      newParams.acceptLanguage = this.locale;
+
+      if(params.acceptLanguage != null){
+        newParams.acceptLanguage += ',' + params.acceptLanguage;
+      }else if(params['Accept-Language'] != null){
+        newParams.acceptLanguage += ',' + params['Accept-Language'];
+      }
     }
     return Object.assign({}, newParams, params);
   }

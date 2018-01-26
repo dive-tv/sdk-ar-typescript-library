@@ -1143,6 +1143,7 @@ export class CustomAPI extends DefaultApi {
     if (params["Accept-Language"] == null && this.locale !== null) {
         newParams["Accept-Language"] = this.locale;
     }*/
+    /*Trying to set locale*/
     if ( this.locale != null) {
       newParams.acceptLanguage = this.locale;
 

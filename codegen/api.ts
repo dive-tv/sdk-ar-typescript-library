@@ -84,6 +84,20 @@ export interface ARCatalogMovie {
 }
 
 /**
+ * Catalog actor / character
+ */
+export interface ARCatalogPerson {
+    /**
+     * Actor / character ID
+     */
+    "person_id": string;
+    /**
+     * Name of the actor or character
+     */
+    "name": string;
+}
+
+/**
  * Catalog serie information
  */
 export interface ARCatalogSerie {
@@ -171,6 +185,10 @@ export interface ARSearchRequest {
      * Optional list of searched context taxonomy IDs
      */
     "taxonomy_ids"?: Array<string>;
+    /**
+     * Optional list of searched context actor and character IDs
+     */
+    "person_ids"?: Array<string>;
     /**
      * Optional list of searched context attributes and values
      */
@@ -424,6 +442,34 @@ export interface RegistrationDataRequest {
  */
 export const DefaultApiFetchParamCreator = {
     /**
+     * Returns the list of actors which are ready for AR analysis on an optional subset of movies
+     * @summary List AR-available actors
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+     */
+    getARActors(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any): FetchArgs {
+        // verify required parameter "authorization" is set
+        if (params["authorization"] == null) {
+            throw new Error("Missing required parameter authorization when calling getARActors");
+        }
+        const baseUrl = `/ar/actors`;
+        let urlObj = url.parse(baseUrl, true);
+        urlObj.query = Object.assign({}, urlObj.query, {
+            "movie_ids": params["movieIds"],
+        });
+        let fetchOptions: RequestInit = Object.assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        fetchOptions.headers = Object.assign({
+            "Authorization": params["authorization"],"Accept-Language": params["acceptLanguage"],
+        }, contentTypeHeader, fetchOptions.headers);
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
      * Returns the list of attributes and values on an optional subset of movies
      * @summary List AR-available context attributes
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -436,6 +482,34 @@ export const DefaultApiFetchParamCreator = {
             throw new Error("Missing required parameter authorization when calling getARAttributes");
         }
         const baseUrl = `/ar/attributes`;
+        let urlObj = url.parse(baseUrl, true);
+        urlObj.query = Object.assign({}, urlObj.query, {
+            "movie_ids": params["movieIds"],
+        });
+        let fetchOptions: RequestInit = Object.assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        fetchOptions.headers = Object.assign({
+            "Authorization": params["authorization"],"Accept-Language": params["acceptLanguage"],
+        }, contentTypeHeader, fetchOptions.headers);
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
+     * Returns the list of characters which are ready for AR analysis on an optional subset of movies
+     * @summary List AR-available characters
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+     */
+    getARCharacters(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any): FetchArgs {
+        // verify required parameter "authorization" is set
+        if (params["authorization"] == null) {
+            throw new Error("Missing required parameter authorization when calling getARCharacters");
+        }
+        const baseUrl = `/ar/characters`;
         let urlObj = url.parse(baseUrl, true);
         urlObj.query = Object.assign({}, urlObj.query, {
             "movie_ids": params["movieIds"],
@@ -695,6 +769,25 @@ export const DefaultApiFetchParamCreator = {
  */
 export const DefaultApiFp = {
     /**
+     * Returns the list of actors which are ready for AR analysis on an optional subset of movies
+     * @summary List AR-available actors
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+     */
+    getARActors(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogPerson>> {
+        const fetchArgs = DefaultApiFetchParamCreator.getARActors(params, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
      * Returns the list of attributes and values on an optional subset of movies
      * @summary List AR-available context attributes
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -703,6 +796,25 @@ export const DefaultApiFp = {
      */
     getARAttributes(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogAttribute>> {
         const fetchArgs = DefaultApiFetchParamCreator.getARAttributes(params, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
+     * Returns the list of characters which are ready for AR analysis on an optional subset of movies
+     * @summary List AR-available characters
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+     */
+    getARCharacters(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARCatalogPerson>> {
+        const fetchArgs = DefaultApiFetchParamCreator.getARCharacters(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -872,6 +984,16 @@ export const DefaultApiFp = {
  */
 export class DefaultApi extends BaseAPI {
     /**
+     * Returns the list of actors which are ready for AR analysis on an optional subset of movies
+     * @summary List AR-available actors
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+     */
+    getARActors(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
+        return DefaultApiFp.getARActors(params, options)(this.fetch, this.basePath);
+    }
+    /**
      * Returns the list of attributes and values on an optional subset of movies
      * @summary List AR-available context attributes
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -880,6 +1002,16 @@ export class DefaultApi extends BaseAPI {
      */
     getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
         return DefaultApiFp.getARAttributes(params, options)(this.fetch, this.basePath);
+    }
+    /**
+     * Returns the list of characters which are ready for AR analysis on an optional subset of movies
+     * @summary List AR-available characters
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+     */
+    getARCharacters(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
+        return DefaultApiFp.getARCharacters(params, options)(this.fetch, this.basePath);
     }
     /**
      * Returns the list of movies which are ready for AR analysis
@@ -969,6 +1101,16 @@ export class DefaultApi extends BaseAPI {
 export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
     return {
         /**
+         * Returns the list of actors which are ready for AR analysis on an optional subset of movies
+         * @summary List AR-available actors
+         * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+         * @param acceptLanguage Client locale, as language-country
+         * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+         */
+        getARActors(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
+            return DefaultApiFp.getARActors(params, options)(fetch, basePath);
+        },
+        /**
          * Returns the list of attributes and values on an optional subset of movies
          * @summary List AR-available context attributes
          * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -977,6 +1119,16 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
          */
         getARAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
             return DefaultApiFp.getARAttributes(params, options)(fetch, basePath);
+        },
+        /**
+         * Returns the list of characters which are ready for AR analysis on an optional subset of movies
+         * @summary List AR-available characters
+         * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+         * @param acceptLanguage Client locale, as language-country
+         * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+         */
+        getARCharacters(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
+            return DefaultApiFp.getARCharacters(params, options)(fetch, basePath);
         },
         /**
          * Returns the list of movies which are ready for AR analysis
@@ -1281,6 +1433,50 @@ export class CustomAPI extends DefaultApi {
     });
   }
   /**
+  * List AR-available actors
+  * Returns the list of actors which are ready for AR analysis on an optional subset of movies
+  * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+  * @param acceptLanguage Client locale, as language-country
+  * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+  */
+  public getARActors(params: {  "movieIds"?: Array<string>; }, options?: any) {
+    let newParams: any = this.gatherCommonHeaders(params);
+    return new Promise<Array<ARCatalogPerson>>((resolve: any, reject: any) => {
+      super.getARActors(newParams)
+      .then((result: Array<ARCatalogPerson>) => {
+        resolve(result);
+      })
+      .catch ((error: any) => {
+        if (error) {
+            console.log("%c REST error - getARActors", "background: black; color: #FE2EF7; padding: 0 10px;", error);
+        }
+        if (error.status === 401 && this.serviceRequiresToken("getARActors")) {
+            this.refreshToken()
+            .catch ((error: any) => {
+              if (this.deviceId) {
+                return this.postTokenAndSave({ grantType: "device_credentials", deviceId: this.deviceId });
+              } else {
+                throw new Error("Can not refresh token (no device id)");
+              }
+            })
+            .then(() => {
+              newParams = this.gatherCommonHeaders(params);
+              return super.getARActors(newParams);
+            })
+            .then((result: any) => {
+              resolve(result);
+            })
+            .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
+              reject(errorRefreshingToken);
+            });
+        } else {
+            reject(error);
+        }
+      });
+    });
+  }
+  /**
   * List AR-available context attributes
   * Returns the list of attributes and values on an optional subset of movies
   * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -1310,6 +1506,50 @@ export class CustomAPI extends DefaultApi {
             .then(() => {
               newParams = this.gatherCommonHeaders(params);
               return super.getARAttributes(newParams);
+            })
+            .then((result: any) => {
+              resolve(result);
+            })
+            .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
+              reject(errorRefreshingToken);
+            });
+        } else {
+            reject(error);
+        }
+      });
+    });
+  }
+  /**
+  * List AR-available characters
+  * Returns the list of characters which are ready for AR analysis on an optional subset of movies
+  * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+  * @param acceptLanguage Client locale, as language-country
+  * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+  */
+  public getARCharacters(params: {  "movieIds"?: Array<string>; }, options?: any) {
+    let newParams: any = this.gatherCommonHeaders(params);
+    return new Promise<Array<ARCatalogPerson>>((resolve: any, reject: any) => {
+      super.getARCharacters(newParams)
+      .then((result: Array<ARCatalogPerson>) => {
+        resolve(result);
+      })
+      .catch ((error: any) => {
+        if (error) {
+            console.log("%c REST error - getARCharacters", "background: black; color: #FE2EF7; padding: 0 10px;", error);
+        }
+        if (error.status === 401 && this.serviceRequiresToken("getARCharacters")) {
+            this.refreshToken()
+            .catch ((error: any) => {
+              if (this.deviceId) {
+                return this.postTokenAndSave({ grantType: "device_credentials", deviceId: this.deviceId });
+              } else {
+                throw new Error("Can not refresh token (no device id)");
+              }
+            })
+            .then(() => {
+              newParams = this.gatherCommonHeaders(params);
+              return super.getARCharacters(newParams);
             })
             .then((result: any) => {
               resolve(result);

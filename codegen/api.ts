@@ -229,10 +229,7 @@ export interface ARSearchResultContext {
      * List of key frame image URLs for this context
      */
     "kfts": Array<string>;
-    /**
-     * Additional attributes related to this context
-     */
-    "attributes"?: any;
+    "attributes"?: ARSearchResultContextAttributes;
 }
 
 /**

@@ -46,6 +46,10 @@ export interface ARCatalogAttribute {
      */
     "name": string;
     /**
+     * Attribute displayable description
+     */
+    "description": string;
+    /**
      * List of available values for this attribute
      */
     "values": Array<string>;

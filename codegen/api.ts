@@ -303,6 +303,10 @@ export interface ARSearchResultMovie {
      */
     "video_url": string;
     /**
+     * Video frame rate
+     */
+    "framerate"?: number;
+    /**
      * Indicates if detected media is a movie or a chapter
      */
     "is_chapter"?: boolean;

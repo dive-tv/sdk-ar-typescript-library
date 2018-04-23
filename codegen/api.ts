@@ -655,7 +655,7 @@ export const DefaultApiFetchParamCreator = {
         };
     },
     /**
-     * Registers a new user into Dive apis using the client user name and provided password
+     * Registers a new user into Dive apis using the client id user name and provided password
      * @summary Token endpoint
      * @param registrationDataRequest User registration data
      */
@@ -950,7 +950,7 @@ export const DefaultApiFp = {
         };
     },
     /**
-     * Registers a new user into Dive apis using the client user name and provided password
+     * Registers a new user into Dive apis using the client id user name and provided password
      * @summary Token endpoint
      * @param registrationDataRequest User registration data
      */
@@ -1119,7 +1119,7 @@ export class DefaultApi extends BaseAPI {
         return DefaultApiFp.getARTaxonomies(params, options)(this.fetch, this.basePath);
     }
     /**
-     * Registers a new user into Dive apis using the client user name and provided password
+     * Registers a new user into Dive apis using the client id user name and provided password
      * @summary Token endpoint
      * @param registrationDataRequest User registration data
      */
@@ -1244,7 +1244,7 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
             return DefaultApiFp.getARTaxonomies(params, options)(fetch, basePath);
         },
         /**
-         * Registers a new user into Dive apis using the client user name and provided password
+         * Registers a new user into Dive apis using the client id user name and provided password
          * @summary Token endpoint
          * @param registrationDataRequest User registration data
          */
@@ -1823,7 +1823,7 @@ export class CustomAPI extends DefaultApi {
   }
   /**
   * Token endpoint
-  * Registers a new user into Dive apis using the client user name and provided password
+  * Registers a new user into Dive apis using the client id user name and provided password
   * @param registrationDataRequest User registration data
   */
   public postRegisterUser(params: {  "registrationDataRequest": ClientRegistrationDataRequest; }, options?: any) {

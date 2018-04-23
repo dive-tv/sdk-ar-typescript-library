@@ -786,7 +786,7 @@ export const DefaultApiFetchParamCreator = {
         };
     },
     /**
-     * Registers a user into Dive apis using the client_id, user name and provided password
+     * Registers a user into Dive apis using the client id, user name and provided password
      * @summary Token endpoint
      * @param tokenDataRequest User registration data
      */
@@ -1028,7 +1028,7 @@ export const DefaultApiFp = {
         };
     },
     /**
-     * Registers a user into Dive apis using the client_id, user name and provided password
+     * Registers a user into Dive apis using the client id, user name and provided password
      * @summary Token endpoint
      * @param tokenDataRequest User registration data
      */
@@ -1161,7 +1161,7 @@ export class DefaultApi extends BaseAPI {
         return DefaultApiFp.postToken(params, options)(this.fetch, this.basePath);
     }
     /**
-     * Registers a user into Dive apis using the client_id, user name and provided password
+     * Registers a user into Dive apis using the client id, user name and provided password
      * @summary Token endpoint
      * @param tokenDataRequest User registration data
      */
@@ -1286,7 +1286,7 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
             return DefaultApiFp.postToken(params, options)(fetch, basePath);
         },
         /**
-         * Registers a user into Dive apis using the client_id, user name and provided password
+         * Registers a user into Dive apis using the client id, user name and provided password
          * @summary Token endpoint
          * @param tokenDataRequest User registration data
          */
@@ -2001,7 +2001,7 @@ export class CustomAPI extends DefaultApi {
   }
   /**
   * Token endpoint
-  * Registers a user into Dive apis using the client_id, user name and provided password
+  * Registers a user into Dive apis using the client id, user name and provided password
   * @param tokenDataRequest User registration data
   */
   public postTokenClientUser(params: {  "tokenDataRequest": ClientRegistrationDataRequest; }, options?: any) {

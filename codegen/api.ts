@@ -427,6 +427,24 @@ export interface AuthError {
 }
 
 /**
+ * Client User registration data request
+ */
+export interface ClientRegistrationDataRequest {
+    /**
+     * user name
+     */
+    "username"?: string;
+    /**
+     * password in MD5 format
+     */
+    "password"?: string;
+    /**
+     * client id
+     */
+    "client_id"?: string;
+}
+
+/**
  * User registration data request
  */
 export interface RegistrationDataRequest {
@@ -637,19 +655,46 @@ export const DefaultApiFetchParamCreator = {
         };
     },
     /**
+     * Registers a new user into Dive apis using the client user name and provided password
+     * @summary Token endpoint
+     * @param registrationDataRequest User registration data
+     */
+    postRegisterUser(params: {  "registrationDataRequest": ClientRegistrationDataRequest; }, options?: any): FetchArgs {
+        // verify required parameter "registrationDataRequest" is set
+        if (params["registrationDataRequest"] == null) {
+            throw new Error("Missing required parameter registrationDataRequest when calling postRegisterUser");
+        }
+        const baseUrl = `/token_client_user`;
+        let urlObj = url.parse(baseUrl, true);
+        let fetchOptions: RequestInit = Object.assign({}, { method: "POST" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        contentTypeHeader = { "Content-Type": "application/json" };
+        if (params["registrationDataRequest"]) {
+            fetchOptions.body = JSON.stringify(params["registrationDataRequest"] || {});
+        }
+        if (contentTypeHeader) {
+            fetchOptions.headers = Object.assign({}, contentTypeHeader, fetchOptions.headers);
+        }
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
      * Registers a new user into Add Resonance application using the user name and provided password
      * @summary Register user account
      * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
      * @param registrationDataRequest User registration data
      */
-    postRegisterUser(params: {  "authorization": string; "registrationDataRequest": RegistrationDataRequest; }, options?: any): FetchArgs {
+    postRegisterUser_1(params: {  "authorization": string; "registrationDataRequest": RegistrationDataRequest; }, options?: any): FetchArgs {
         // verify required parameter "authorization" is set
         if (params["authorization"] == null) {
-            throw new Error("Missing required parameter authorization when calling postRegisterUser");
+            throw new Error("Missing required parameter authorization when calling postRegisterUser_1");
         }
         // verify required parameter "registrationDataRequest" is set
         if (params["registrationDataRequest"] == null) {
-            throw new Error("Missing required parameter registrationDataRequest when calling postRegisterUser");
+            throw new Error("Missing required parameter registrationDataRequest when calling postRegisterUser_1");
         }
         const baseUrl = `/ar/register/user`;
         let urlObj = url.parse(baseUrl, true);
@@ -905,13 +950,30 @@ export const DefaultApiFp = {
         };
     },
     /**
+     * Registers a new user into Dive apis using the client user name and provided password
+     * @summary Token endpoint
+     * @param registrationDataRequest User registration data
+     */
+    postRegisterUser(params: { "registrationDataRequest": ClientRegistrationDataRequest;  }, options?: any): (fetch?: any, basePath?: string) => Promise<AccessToken> {
+        const fetchArgs = DefaultApiFetchParamCreator.postRegisterUser(params, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
      * Registers a new user into Add Resonance application using the user name and provided password
      * @summary Register user account
      * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
      * @param registrationDataRequest User registration data
      */
-    postRegisterUser(params: { "authorization": string; "registrationDataRequest": RegistrationDataRequest;  }, options?: any): (fetch?: any, basePath?: string) => Promise<any> {
-        const fetchArgs = DefaultApiFetchParamCreator.postRegisterUser(params, options);
+    postRegisterUser_1(params: { "authorization": string; "registrationDataRequest": RegistrationDataRequest;  }, options?: any): (fetch?: any, basePath?: string) => Promise<any> {
+        const fetchArgs = DefaultApiFetchParamCreator.postRegisterUser_1(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
                 if (response.status >= 200 && response.status < 300) {
@@ -1057,13 +1119,21 @@ export class DefaultApi extends BaseAPI {
         return DefaultApiFp.getARTaxonomies(params, options)(this.fetch, this.basePath);
     }
     /**
+     * Registers a new user into Dive apis using the client user name and provided password
+     * @summary Token endpoint
+     * @param registrationDataRequest User registration data
+     */
+    postRegisterUser(params: {  "registrationDataRequest": ClientRegistrationDataRequest; }, options?: any) {
+        return DefaultApiFp.postRegisterUser(params, options)(this.fetch, this.basePath);
+    }
+    /**
      * Registers a new user into Add Resonance application using the user name and provided password
      * @summary Register user account
      * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
      * @param registrationDataRequest User registration data
      */
-    postRegisterUser(params: {  "authorization": string; "registrationDataRequest": RegistrationDataRequest; }, options?: any) {
-        return DefaultApiFp.postRegisterUser(params, options)(this.fetch, this.basePath);
+    postRegisterUser_1(params: {  "authorization": string; "registrationDataRequest": RegistrationDataRequest; }, options?: any) {
+        return DefaultApiFp.postRegisterUser_1(params, options)(this.fetch, this.basePath);
     }
     /**
      * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
@@ -1174,13 +1244,21 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
             return DefaultApiFp.getARTaxonomies(params, options)(fetch, basePath);
         },
         /**
+         * Registers a new user into Dive apis using the client user name and provided password
+         * @summary Token endpoint
+         * @param registrationDataRequest User registration data
+         */
+        postRegisterUser(params: {  "registrationDataRequest": ClientRegistrationDataRequest; }, options?: any) {
+            return DefaultApiFp.postRegisterUser(params, options)(fetch, basePath);
+        },
+        /**
          * Registers a new user into Add Resonance application using the user name and provided password
          * @summary Register user account
          * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
          * @param registrationDataRequest User registration data
          */
-        postRegisterUser(params: {  "authorization": string; "registrationDataRequest": RegistrationDataRequest; }, options?: any) {
-            return DefaultApiFp.postRegisterUser(params, options)(fetch, basePath);
+        postRegisterUser_1(params: {  "authorization": string; "registrationDataRequest": RegistrationDataRequest; }, options?: any) {
+            return DefaultApiFp.postRegisterUser_1(params, options)(fetch, basePath);
         },
         /**
          * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
@@ -1744,16 +1822,15 @@ export class CustomAPI extends DefaultApi {
     });
   }
   /**
-  * Register user account
-  * Registers a new user into Add Resonance application using the user name and provided password
-  * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
+  * Token endpoint
+  * Registers a new user into Dive apis using the client user name and provided password
   * @param registrationDataRequest User registration data
   */
-  public postRegisterUser(params: {  "registrationDataRequest": RegistrationDataRequest; }, options?: any) {
+  public postRegisterUser(params: {  "registrationDataRequest": ClientRegistrationDataRequest; }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
-    return new Promise<any>((resolve: any, reject: any) => {
+    return new Promise<AccessToken>((resolve: any, reject: any) => {
       super.postRegisterUser(newParams)
-      .then((result: any) => {
+      .then((result: AccessToken) => {
         resolve(result);
       })
       .catch ((error: any) => {
@@ -1772,6 +1849,49 @@ export class CustomAPI extends DefaultApi {
             .then(() => {
               newParams = this.gatherCommonHeaders(params);
               return super.postRegisterUser(newParams);
+            })
+            .then((result: any) => {
+              resolve(result);
+            })
+            .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
+              reject(errorRefreshingToken);
+            });
+        } else {
+            reject(error);
+        }
+      });
+    });
+  }
+  /**
+  * Register user account
+  * Registers a new user into Add Resonance application using the user name and provided password
+  * @param authorization Basic authorization token (&#39;Basic &lt;client_key&gt;&#39;)
+  * @param registrationDataRequest User registration data
+  */
+  public postRegisterUser_1(params: {  "registrationDataRequest": RegistrationDataRequest; }, options?: any) {
+    let newParams: any = this.gatherCommonHeaders(params);
+    return new Promise<any>((resolve: any, reject: any) => {
+      super.postRegisterUser_1(newParams)
+      .then((result: any) => {
+        resolve(result);
+      })
+      .catch ((error: any) => {
+        if (error) {
+            console.log("%c REST error - postRegisterUser_1", "background: black; color: #FE2EF7; padding: 0 10px;", error);
+        }
+        if (error.status === 401 && this.serviceRequiresToken("postRegisterUser_1")) {
+            this.refreshToken()
+            .catch ((error: any) => {
+              if (this.deviceId) {
+                return this.postTokenAndSave({ grantType: "device_credentials", deviceId: this.deviceId });
+              } else {
+                throw new Error("Can not refresh token (no device id)");
+              }
+            })
+            .then(() => {
+              newParams = this.gatherCommonHeaders(params);
+              return super.postRegisterUser_1(newParams);
             })
             .then((result: any) => {
               resolve(result);

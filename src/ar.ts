@@ -15,9 +15,10 @@ export class ArAPI extends CustomAPI {
    * @param username User name of the user
    * @param password MD5 password of the user
    */
-  public login = (params: { username: string, password: string }) => {
-    return this.postTokenAndSave({ grantType: "user_credentials", username: params.username, password: params.password });
+  public login = (params: { username: string, password: string, client_id?: string }) => {
+    return this.postTokenAndSave({ grantType: "user_credentials", username: params.username, password: params.password, clientId: params.client_id });
   }
+
 }
 export * from "../codegen/api";
 export const ArAPIClass = ArAPI;

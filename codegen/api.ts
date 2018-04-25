@@ -1506,6 +1506,7 @@ export class CustomAPI extends DefaultApi {
     const expires = "expires=" + d.toUTCString();
     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
   }
+  
   public postTokenAndSave(params?: {grantType: string, username?: string, password?: string, deviceId?: string, refreshToken?: string, clientId?: string}, options?: any) {
     this.deleteSavedToken();
     return new Promise((resolve: any, reject: any) => {

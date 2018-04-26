@@ -1532,6 +1532,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
+  
   /**
   * List AR-available actors
   * Returns the list of actors which are ready for AR analysis on an optional subset of movies

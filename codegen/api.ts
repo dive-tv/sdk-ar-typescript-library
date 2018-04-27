@@ -1355,6 +1355,7 @@ export class CustomAPI extends DefaultApi {
         break;
     }
   }
+  
   public setLocale(locale: string) {
       this.locale = locale;
   }
@@ -1516,20 +1517,27 @@ export class CustomAPI extends DefaultApi {
       if( params != null && params.clientId != null){
         this.clientId = params.clientId;
       }
+      
       if(this.clientId == null){
         request = this.postToken(newParams, options);
       }else{
         newParams.clientId = this.clientId;
-        request = this.postTokenClientUser({tokenDataRequest:newParams}, options);
+        if(this.postTokenClientUser){
+          request = this.postTokenClientUser({tokenDataRequest:newParams}, options);
+        }
       }
-      request.then((newToken: AccessToken) => {
-        this.writeToken(newToken);
-        resolve();
-      })
-      .catch ((e: any) => {
-        console.error("Error in postToken from postTokenAndSave", e);
-        reject(e);
-      });
+
+      if(request){
+         request.then((newToken: AccessToken) => {
+          this.writeToken(newToken);
+          resolve();
+        })
+        .catch ((e: any) => {
+          console.error("Error in postToken from postTokenAndSave", e);
+          reject(e);
+        });
+      }
+     
     });
   }
 
@@ -1577,7 +1585,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * List AR-available context attributes
   * Returns the list of attributes and values on an optional subset of movies
@@ -1622,7 +1630,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * List AR-available characters
   * Returns the list of characters which are ready for AR analysis on an optional subset of movies
@@ -1667,7 +1675,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * List AR-available movies
   * Returns the list of movies which are ready for AR analysis
@@ -1711,7 +1719,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * List serie seasons and chapters
   * Returns the list of seasons and chapters which are available for AR analysis for a given client serie
@@ -1756,7 +1764,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * List AR-available series
   * Returns the list of series which are ready for AR analysis
@@ -1800,7 +1808,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * List AR-available taxonomies
   * Returns the list of taxonomies on an optional subset of movies
@@ -1845,7 +1853,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * Register user account
   * Registers a new user into Add Resonance application using the user name and provided password
@@ -1889,7 +1897,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * Search contexts at movie level
   * Returns the list of contexts which fulfill the search terms, filtered at movie level and grouped by taxonomy branch
@@ -1934,7 +1942,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * Search contexts at scene level
   * Returns the list of scenes which fulfill the requested search filters, grouped by movie
@@ -1979,7 +1987,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * Token endpoint
   * The token endpoint is used to obtain access tokens which allow clients to make API requests
@@ -2027,7 +2035,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   /**
   * Token endpoint
   * Registers a user into Dive apis using the client id user name and provided password
@@ -2070,7 +2078,7 @@ export class CustomAPI extends DefaultApi {
       });
     });
   }
-  
+
   private serviceRequiresToken(methodName: string) {
     return this.noAuthServices.indexOf(methodName) === -1;
   }

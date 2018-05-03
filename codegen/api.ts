@@ -1359,6 +1359,7 @@ export class CustomAPI extends DefaultApi {
   public setLocale(locale: string) {
       this.locale = locale;
   }
+  
   public getLocale() {
       return this.locale;
   }

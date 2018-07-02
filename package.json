@@ -1,6 +1,6 @@
 {
   "name": "@dive-tv/sdk-ar-typescript-library",
-  "version": "1.31.0",
+  "version": "1.32.0",
   "description": "Dive SDK Client for AR (Ad Resonance)",
   "browser": "./dist/ar.js",
   "main": "./dist/ar.js",

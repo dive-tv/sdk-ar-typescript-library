@@ -811,6 +811,34 @@ export const DefaultApiFetchParamCreator = {
         };
     },
     /**
+     * Returns the list of attributes and values on an optional subset of movies
+     * @summary List AR-available context attributes
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+     */
+    getARFilterAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any): FetchArgs {
+        // verify required parameter "authorization" is set
+        if (params["authorization"] == null) {
+            throw new Error("Missing required parameter authorization when calling getARFilterAttributes");
+        }
+        const baseUrl = `/ar/filters/attributes`;
+        let urlObj = url.parse(baseUrl, true);
+        urlObj.query = Object.assign({}, urlObj.query, {
+            "movie_ids": params["movieIds"],
+        });
+        let fetchOptions: RequestInit = Object.assign({}, { method: "GET" }, options);
+
+        let contentTypeHeader: Dictionary<string> = {};
+        fetchOptions.headers = Object.assign({
+            "Authorization": params["authorization"],"Accept-Language": params["acceptLanguage"],
+        }, contentTypeHeader, fetchOptions.headers);
+        return {
+            url: url.format(urlObj),
+            options: fetchOptions,
+        };
+    },
+    /**
      * Returns the list of contexts on an optional subset of movies
      * @summary List AR-available filter contexts
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -1319,6 +1347,25 @@ export const DefaultApiFp = {
         };
     },
     /**
+     * Returns the list of attributes and values on an optional subset of movies
+     * @summary List AR-available context attributes
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+     */
+    getARFilterAttributes(params: { "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARFilterAttribute>> {
+        const fetchArgs = DefaultApiFetchParamCreator.getARFilterAttributes(params, options);
+        return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
+            return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json();
+                } else {
+                    throw response;
+                }
+            });
+        };
+    },
+    /**
      * Returns the list of contexts on an optional subset of movies
      * @summary List AR-available filter contexts
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -1646,6 +1693,16 @@ export class DefaultApi extends BaseAPI {
         return DefaultApiFp.getARFilterActors(params, options)(this.fetch, this.basePath);
     }
     /**
+     * Returns the list of attributes and values on an optional subset of movies
+     * @summary List AR-available context attributes
+     * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+     * @param acceptLanguage Client locale, as language-country
+     * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+     */
+    getARFilterAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
+        return DefaultApiFp.getARFilterAttributes(params, options)(this.fetch, this.basePath);
+    }
+    /**
      * Returns the list of contexts on an optional subset of movies
      * @summary List AR-available filter contexts
      * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
@@ -1837,6 +1894,16 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
          */
         getARFilterActors(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
             return DefaultApiFp.getARFilterActors(params, options)(fetch, basePath);
+        },
+        /**
+         * Returns the list of attributes and values on an optional subset of movies
+         * @summary List AR-available context attributes
+         * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+         * @param acceptLanguage Client locale, as language-country
+         * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+         */
+        getARFilterAttributes(params: {  "authorization": string; "acceptLanguage"?: string; "movieIds"?: Array<string>; }, options?: any) {
+            return DefaultApiFp.getARFilterAttributes(params, options)(fetch, basePath);
         },
         /**
          * Returns the list of contexts on an optional subset of movies
@@ -2398,6 +2465,51 @@ export class CustomAPI extends DefaultApi {
             .then(() => {
               newParams = this.gatherCommonHeaders(params);
               return super.getARFilterActors(newParams);
+            })
+            .then((result: any) => {
+              resolve(result);
+            })
+            .catch ((errorRefreshingToken: any) => {
+              console.error('Error refreshing token', errorRefreshingToken);
+              reject(errorRefreshingToken);
+            });
+        } else {
+            reject(error);
+        }
+      });
+    });
+  }
+
+  /**
+  * List AR-available context attributes
+  * Returns the list of attributes and values on an optional subset of movies
+  * @param authorization Authorization token (&#39;Bearer &lt;token&gt;&#39;)
+  * @param acceptLanguage Client locale, as language-country
+  * @param movieIds Optional comma-separated list of movie IDs to filter returned taxonomies
+  */
+  public getARFilterAttributes(params: {  "movieIds"?: Array<string>; }, options?: any) {
+    let newParams: any = this.gatherCommonHeaders(params);
+    return new Promise<Array<ARFilterAttribute>>((resolve: any, reject: any) => {
+      super.getARFilterAttributes(newParams)
+      .then((result: Array<ARFilterAttribute>) => {
+        resolve(result);
+      })
+      .catch ((error: any) => {
+        if (error) {
+            console.log("%c REST error - getARFilterAttributes", "background: black; color: #FE2EF7; padding: 0 10px;", error);
+        }
+        if (error.status === 401 && this.serviceRequiresToken("getARFilterAttributes")) {
+            this.refreshToken()
+            .catch ((error: any) => {
+              if (this.deviceId) {
+                return this.postTokenAndSave({ grantType: "device_credentials", deviceId: this.deviceId });
+              } else {
+                throw new Error("Can not refresh token (no device id)");
+              }
+            })
+            .then(() => {
+              newParams = this.gatherCommonHeaders(params);
+              return super.getARFilterAttributes(newParams);
             })
             .then((result: any) => {
               resolve(result);

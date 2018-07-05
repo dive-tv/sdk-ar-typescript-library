@@ -182,6 +182,10 @@ export interface ARCatalogTaxonomy {
  */
 export interface ARFilterAttribute {
     /**
+     * Attribute id
+     */
+    "id": string;
+    /**
      * Attribute name
      */
     "name": string;
@@ -189,7 +193,7 @@ export interface ARFilterAttribute {
     /**
      * List of available values for this attribute
      */
-    "children": Array<string>;
+    "children"?: Array<ARFilterAttribute>;
 }
 
 /**
@@ -369,6 +373,28 @@ export interface ARFilterSerieSeason {
      * List of chapters of the season
      */
     "children": Array<ARFilterSerieChapter>;
+}
+
+/**
+ * Context search request
+ */
+export interface ARSearchByIdsRequest {
+    /**
+     * Optional list of searched movie and chapter IDs
+     */
+    "movie_ids"?: Array<string>;
+    /**
+     * Optional list of searched context taxonomy IDs
+     */
+    "taxonomy_ids"?: Array<string>;
+    /**
+     * Optional list of searched context actor and character IDs
+     */
+    "person_ids"?: Array<string>;
+    /**
+     * Optional list of searched context attributes and values
+     */
+    "attribute_ids"?: Array<string>;
 }
 
 /**
@@ -1055,7 +1081,7 @@ export const DefaultApiFetchParamCreator = {
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
      */
-    postContextCountSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any): FetchArgs {
+    postContextCountSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchByIdsRequest; }, options?: any): FetchArgs {
         // verify required parameter "authorization" is set
         if (params["authorization"] == null) {
             throw new Error("Missing required parameter authorization when calling postContextCountSearch");
@@ -1084,7 +1110,7 @@ export const DefaultApiFetchParamCreator = {
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
      */
-    postContextSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any): FetchArgs {
+    postContextSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchByIdsRequest; }, options?: any): FetchArgs {
         // verify required parameter "authorization" is set
         if (params["authorization"] == null) {
             throw new Error("Missing required parameter authorization when calling postContextSearch");
@@ -1520,7 +1546,7 @@ export const DefaultApiFp = {
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
      */
-    postContextCountSearch(params: { "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSearchCountResultCategory>> {
+    postContextCountSearch(params: { "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchByIdsRequest;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSearchCountResultCategory>> {
         const fetchArgs = DefaultApiFetchParamCreator.postContextCountSearch(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
@@ -1539,7 +1565,7 @@ export const DefaultApiFp = {
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
      */
-    postContextSearch(params: { "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSearchResultMovie>> {
+    postContextSearch(params: { "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchByIdsRequest;  }, options?: any): (fetch?: any, basePath?: string) => Promise<Array<ARSearchResultMovie>> {
         const fetchArgs = DefaultApiFetchParamCreator.postContextSearch(params, options);
         return (fetch: FetchAPI = isomorphicFetch, basePath: string = BASE_PATH) => {
             return fetch(basePath + fetchArgs.url, fetchArgs.options).then((response: any) => {
@@ -1785,7 +1811,7 @@ export class DefaultApi extends BaseAPI {
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
      */
-    postContextCountSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any) {
+    postContextCountSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchByIdsRequest; }, options?: any) {
         return DefaultApiFp.postContextCountSearch(params, options)(this.fetch, this.basePath);
     }
     /**
@@ -1795,7 +1821,7 @@ export class DefaultApi extends BaseAPI {
      * @param acceptLanguage Client locale, as language-country
      * @param searchRequest Search terms
      */
-    postContextSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any) {
+    postContextSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchByIdsRequest; }, options?: any) {
         return DefaultApiFp.postContextSearch(params, options)(this.fetch, this.basePath);
     }
     /**
@@ -1988,7 +2014,7 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
          * @param acceptLanguage Client locale, as language-country
          * @param searchRequest Search terms
          */
-        postContextCountSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any) {
+        postContextCountSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchByIdsRequest; }, options?: any) {
             return DefaultApiFp.postContextCountSearch(params, options)(fetch, basePath);
         },
         /**
@@ -1998,7 +2024,7 @@ export const DefaultApiFactory = function (fetch?: any, basePath?: string) {
          * @param acceptLanguage Client locale, as language-country
          * @param searchRequest Search terms
          */
-        postContextSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchRequest; }, options?: any) {
+        postContextSearch(params: {  "authorization": string; "acceptLanguage"?: string; "searchRequest"?: ARSearchByIdsRequest; }, options?: any) {
             return DefaultApiFp.postContextSearch(params, options)(fetch, basePath);
         },
         /**
@@ -2888,7 +2914,7 @@ export class CustomAPI extends DefaultApi {
   * @param acceptLanguage Client locale, as language-country
   * @param searchRequest Search terms
   */
-  public postContextCountSearch(params: {  "searchRequest"?: ARSearchRequest; }, options?: any) {
+  public postContextCountSearch(params: {  "searchRequest"?: ARSearchByIdsRequest; }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
     return new Promise<Array<ARSearchCountResultCategory>>((resolve: any, reject: any) => {
       super.postContextCountSearch(newParams)
@@ -2933,7 +2959,7 @@ export class CustomAPI extends DefaultApi {
   * @param acceptLanguage Client locale, as language-country
   * @param searchRequest Search terms
   */
-  public postContextSearch(params: {  "searchRequest"?: ARSearchRequest; }, options?: any) {
+  public postContextSearch(params: {  "searchRequest"?: ARSearchByIdsRequest; }, options?: any) {
     let newParams: any = this.gatherCommonHeaders(params);
     return new Promise<Array<ARSearchResultMovie>>((resolve: any, reject: any) => {
       super.postContextSearch(newParams)

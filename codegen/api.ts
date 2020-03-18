@@ -52,6 +52,24 @@ export interface ARCatalogAttribute {
   /**
    * List of available values for this attribute
    */
+  "values": Map<string,number>;
+}
+
+/**
+ * Catalog attribute
+ */
+export interface ARCatalogAttributeOK {
+  /**
+   * Attribute name
+   */
+  "name": string;
+  /**
+   * Attribute displayable description
+   */
+  "description": string;
+  /**
+   * List of available values for this attribute
+   */
   "values": Array<string>;
 }
 
@@ -456,7 +474,7 @@ export interface ARSearchRequest {
   /**
    * Optional list of searched context attributes and values
    */
-  "attributes"?: Array<ARCatalogAttribute>;
+  "attributes"?: Array<ARCatalogAttributeOK>;
 }
 
 /**

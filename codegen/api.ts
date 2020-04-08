@@ -648,7 +648,12 @@ export interface ARSearchResultScene {
   /**
    * List of key frame image URLs for this scene
    */
-  "kfts": Array<string>;
+  "kfts": Array<IResultKftContext>;
+}
+
+export interface IResultKftContext {
+  "kft_path": string;
+  "bounding_box": number[];
 }
 
 /**
